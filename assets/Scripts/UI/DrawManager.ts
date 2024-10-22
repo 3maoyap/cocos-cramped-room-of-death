@@ -1,7 +1,7 @@
 import { BlockInputEvents, Color, Component, game, Graphics, UITransform, view, _decorator } from 'cc'
 const { ccclass } = _decorator
-const SCREEN_WIDTH = view.getVisibleSize().width
-const SCREEN_HEIGHT = view.getVisibleSize().height
+let SCREEN_WIDTH = 0
+let SCREEN_HEIGHT = 0
 
 export const DEFAULT_FADE_DURATION = 200
 
@@ -22,6 +22,8 @@ export class DrawManager extends Component {
   block: BlockInputEvents
 
   init() {
+    SCREEN_WIDTH = view.getVisibleSize().width
+    SCREEN_HEIGHT = view.getVisibleSize().height
     this.block = this.addComponent(BlockInputEvents)
     this.ctx = this.addComponent(Graphics)
     const transform = this.getComponent(UITransform)
