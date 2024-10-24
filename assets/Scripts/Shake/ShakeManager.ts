@@ -9,6 +9,14 @@ export class ShakeManager extends Component {
   private shakeType: SHAKE_TYPE_ENUM
   private oldTime: number
   private oldPos: { x: number; y: number } = { x: 0, y: 0 }
+  //振幅
+  private shakeAmount = 1.6
+  //持续时间
+  private duration = 200
+  //频率
+  private frequency = 12
+  //当前振动进度
+  private percent = 1
 
   onLoad() {
     EventManager.Instance.on(EVENT_ENUM.SCREEN_SHAKE, this.onShake, this)
@@ -19,7 +27,11 @@ export class ShakeManager extends Component {
   }
 
   stop() {
-    this.isShaking = false
+    if(this.percent > 0){
+      this.isShaking = false
+      this.percent = 0
+      this.node.setPosition(this.oldPos.x, this.oldPos.y)
+    }
   }
 
   onShake(type: SHAKE_TYPE_ENUM) {
@@ -27,6 +39,7 @@ export class ShakeManager extends Component {
       return
     }
     this.isShaking = true
+    this.percent = 0
     this.shakeType = type
     this.oldTime = game.totalTime
     this.oldPos.x = this.node.position.x
@@ -43,28 +56,22 @@ export class ShakeManager extends Component {
    */
   onShakeUpdate() {
     if (this.isShaking) {
-      //振幅
-      const shakeAmount = 1.6
-      //持续时间
-      const duration = 200
-      //频率
-      const frequency = 12
       //当前时间
-      const curSecond = (game.totalTime - this.oldTime) / 1000
-      //总时间
-      const totalSecond = duration / 1000
-      const offset = shakeAmount * Math.sin(frequency * Math.PI * curSecond)
+      const percent = (game.totalTime - this.oldTime) / this.duration
+
+      const offset = Math.abs(this.shakeAmount * Math.sin(this.frequency * Math.PI * percent))
       if (this.shakeType === SHAKE_TYPE_ENUM.TOP) {
-        this.node.setPosition(this.oldPos.x, this.oldPos.y - offset)
-      } else if (this.shakeType === SHAKE_TYPE_ENUM.BOTTOM) {
         this.node.setPosition(this.oldPos.x, this.oldPos.y + offset)
+      } else if (this.shakeType === SHAKE_TYPE_ENUM.BOTTOM) {
+        this.node.setPosition(this.oldPos.x, this.oldPos.y - offset)
       } else if (this.shakeType === SHAKE_TYPE_ENUM.LEFT) {
         this.node.setPosition(this.oldPos.x - offset, this.oldPos.y)
       } else if (this.shakeType === SHAKE_TYPE_ENUM.RIGHT) {
         this.node.setPosition(this.oldPos.x + offset, this.oldPos.y)
       }
-      if (curSecond > totalSecond) {
+      if (percent > 1) {
         this.isShaking = false
+        this.percent = 0
         this.node.setPosition(this.oldPos.x, this.oldPos.y)
       }
     }
